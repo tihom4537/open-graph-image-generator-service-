@@ -1,6 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 // import  safeLoad  from 'js-yaml';
 
+
 export const runtime = "edge";
 
 export async function GET(request: Request) {
@@ -27,21 +28,20 @@ export async function GET(request: Request) {
         // console.log(asyncAPIVersion);
 
         const parsedData = JSON.parse(title);
-        // const docTitle = parsedData.info.title;
-        // const version =parsedData.asyncapi;
-        var asyncapiVersion = parsedData.asyncapi;
-        var docTitle = parsedData.info.title;
-        var numberOfServers = Object.keys(parsedData.servers).length;
-        var numberOfMessages = Object.keys(parsedData.channels).reduce(function (accumulator, current) {
-        return accumulator + Object.keys(parsedData.channels[current].messages).length;
-        }, 0);
-        var numberOfChannels = Object.keys(parsedData.channels).length;
+var asyncapiVersion = parsedData.asyncapi || 0; // Assign default value 0 if asyncapiVersion is falsy
+var docTitle = parsedData.info.title || ''; // Assign an empty string if docTitle is falsy
+var numberOfServers = Object.keys(parsedData.servers).length || 0; // Assign default value 0 if numberOfServers is falsy
+var numberOfMessages = Object.keys(parsedData.channels).reduce(function (accumulator, current) {
+    return accumulator + Object.keys(parsedData.channels[current].messages).length;
+}, 0) || 0; // Assign default value 0 if numberOfMessages is falsy
+var numberOfChannels = Object.keys(parsedData.channels).length || 0; // Assign default value 0 if numberOfChannels is falsy
 
 console.log("AsyncAPI Version:", asyncapiVersion);
-console.log("Title:", title);
+console.log("Title:", docTitle);
 console.log("Number of Servers:", numberOfServers);
 console.log("Number of Messages:", numberOfMessages);
 console.log("Number of Channels:", numberOfChannels);
+
 
         // console.log(APIVersion);
         // console.log("hi");
@@ -84,6 +84,12 @@ console.log("Number of Channels:", numberOfChannels);
             // },
         );
     } catch (e: any) {
-        return new Response("Failed to generate OG image", { status: 500 });
+        // Create a new ImageResponse with the error message
+        return new ImageResponse(
+            <div tw=" display: flex flex-col w-full h-full items-center justify-center bg-gray-50">
+                <div tw="text-center text-red-500">Failed to load image</div>
+            </div>,
+            { status: 500 } // Set the status code appropriately
+        );
     }
 }
